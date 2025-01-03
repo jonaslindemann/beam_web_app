@@ -25,7 +25,6 @@ def save_model(model):
 @app.route('/')
 def index():
     model = get_model()
-    print(model.to_json())
     return render_template('index.html', model=model)
 
 @app.route('/clear_model')
@@ -38,6 +37,7 @@ def clear_model():
 @app.route('/get_model_view')
 def get_model_data():
     model = get_model()
+    model.solve()
     w = BeamWidget(model)
     w.draw()
     return w.to_json()
@@ -47,7 +47,19 @@ def select_beam():
     session['selected_beam'] = int(request.form['data_value'])
     print(session['selected_beam'])
 
-    return jsonify({'status': 'ok'})
+    model = get_model()
+    model.solve()
+    
+    w = BeamWidget(model)
+    w.draw()
+
+    return w.to_json()
+
+def get_float(request, key):
+    try:
+        return float(request.form[key])
+    except:
+        return 0.0
 
 @app.route('/update_model', methods=['POST'])
 def update_model():

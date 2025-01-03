@@ -221,9 +221,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                         const data = await response.json();
                         updateView(data);
                     } else {
-                        // Handle the case with data_value
-                        window.location.reload();
-                        //window.location.href = '/';
+                        const data = await response.json();
+                        updateView(data);
+                        window.location.href = `/`;
                     }
                 }
             } catch (error) {
