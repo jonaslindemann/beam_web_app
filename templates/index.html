@@ -1,0 +1,335 @@
+{% extends "base.html" %} {% block content %}
+<nav
+  class="navbar navbar-expand-lg bg-body-tertiary bg-dark border-bottom border-body fixed-top"
+  data-bs-theme="dark"
+>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Kontinuerlig balk</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Redigera
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="#" data-action="/add_beam"
+                >Lägg till</a
+              >
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" data-action="/remove_beam"
+                >Ta bort</a
+              >
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="#" data-action="/update_model"
+                >Uppdatera</a
+              >
+            </li>
+          </ul>
+          <form id="edit-form" method="POST" style="display: none">
+            <input type="hidden" name="action" id="actionInput" />
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container-fluid full-height-container">
+  <div class="row h-100">
+    <!-- Model View -->
+    <div class="col-md-9 control-panel">
+      <div class="card h-100">
+        <div class="card-header">
+          <a>Balkvy</a>
+        </div>
+        <div class="card-body" id="model-view">
+          <div class="canvas-container">
+            <canvas id="modelCanvas" class="img-responsive"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="col-md-3 control-panel">
+      <!-- Dropdown -->
+      <div class="dropdown">
+        <button
+          class="btn btn-primary dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          {% set beam_number = session['selected_beam'] | default(0) + 1 %}
+          Aktuell balk: {{ beam_number }}
+        </button>
+        <ul class="dropdown-menu">
+          {% for l in model.lengths %} {% set beam_idx = loop.index0+1 %}
+          <li>
+            <a
+              class="dropdown-item"
+              href="#"
+              data-value="{{ loop.index0 }}"
+              data-action="/select_beam"
+              >{{ 'Balk ' ~ beam_idx ~ ': ' ~ l ~ ' (m)' }}</a
+            >
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <p></p>
+
+      <form id="beam-controls">
+        <div class="card">
+          <div class="card-header">
+            <!-- Tab navigation -->
+            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+                  id="home-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#home-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="home-tab-pane"
+                  aria-selected="true"
+                >
+                  Geometri
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="profile-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#profile-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="profile-tab-pane"
+                  aria-selected="false"
+                >
+                  Stöd
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="contact-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#contact-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="contact-tab-pane"
+                  aria-selected="false"
+                >
+                  Last
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="disabled-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#disabled-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="disabled-tab-pane"
+                  aria-selected="false"
+                >
+                  Material
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="myTabContent">
+              <div
+                class="tab-pane fade show active"
+                id="home-tab-pane"
+                role="tabpanel"
+                aria-labelledby="home-tab"
+                tabindex="0"
+              >
+                <!-- Add your control elements here -->
+                <div class="mb-3">
+                  <label for="beam-length" class="form-label">Längd (m)</label>
+                  <input
+                    type="text"
+                    id="beam-length"
+                    name="beam-length"
+                    form="beam-controls"
+                    class="form-control"
+                    inputmode="decimal"
+                    pattern="[0-9]*[.]?[0-9]+"
+                    title="Please enter a number with a decimal point (.)"
+                    value="{{ model.lengths[session['selected_beam']]}}"
+                  />
+                  <label for="beam-points" class="form-label"
+                    >Number of Points</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="beam-points"
+                    name="beam-points"
+                    value="100"
+                    step="10"
+                    min="50"
+                    max="200"
+                  />
+                </div>
+                <!-- Add more controls as needed -->
+              </div>
+              <div
+                class="tab-pane fade"
+                id="profile-tab-pane"
+                role="tabpanel"
+                aria-labelledby="profile-tab"
+                tabindex="0"
+              >
+                <label for="left-support">Vänster</label>
+                <select
+                  id="left-support"
+                  name="left-support"
+                  form="beam-controls"
+                >
+                  {% if model.supports[session['selected_beam']] == 3 %}
+                  <option value="3" selected>XYR</option>
+                  {% else %}
+                  <option value="3">XYR</option>
+                  {% endif %} {% if model.supports[session['selected_beam']] ==
+                  2 %}
+                  <option value="2" selected>XY</option>
+                  {% else %}
+                  <option value="2">XY</option>
+                  {% endif %} {% if model.supports[session['selected_beam']] ==
+                  1 %}
+                  <option value="1" selected>Y</option>
+                  {% else %}
+                  <option value="1">Y</option>
+                  {% endif %}
+                </select>
+                &nbsp;&nbsp;
+                <label for="right-support">Höger</label>
+                <select
+                  id="right-support"
+                  name="right-support"
+                  form="beam-controls"
+                >
+                  {% if model.supports[session['selected_beam']+1] == 3 %}
+                  <option value="3" selected>XYR</option>
+                  {% else %}
+                  <option value="3">XYR</option>
+                  {% endif %} {% if model.supports[session['selected_beam']+1]
+                  == 2 %}
+                  <option value="2" selected>XY</option>
+                  {% else %}
+                  <option value="2">XY</option>
+                  {% endif %} {% if model.supports[session['selected_beam']+1]
+                  == 1 %}
+                  <option value="1" selected>Y</option>
+                  {% else %}
+                  <option value="1">Y</option>
+                  {% endif %}
+                </select>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="contact-tab-pane"
+                role="tabpanel"
+                aria-labelledby="contact-tab"
+                tabindex="0"
+              >
+                <label for="beam-load" class="form-label"
+                  >Utbredd last (N/m)</label
+                >
+                <input
+                  type="text"
+                  form="beam-controls"
+                  id="beam-load"
+                  name="beam-load"
+                  class="form-control"
+                  inputmode="decimal"
+                  pattern="[\+\-]?(\d*\.?\d+|\d+\.?\d*)([eE][\+\-]?\d+)?"
+                  title="Please enter a valid number (e.g., 123.456 or 1.23e-4)"                  value="{{ '%0.4g' %model.loads[session['selected_beam']]|float}}">
+              </div>
+              <div
+                class="tab-pane fade"
+                id="disabled-tab-pane"
+                role="tabpanel"
+                aria-labelledby="disabled-tab"
+                tabindex="0"
+              >
+                <label for="beam-load" class="form-label"
+                  >Elasticitetsmodul (Pa)</label
+                >
+                <input
+                  type="text"
+                  form="beam-controls"
+                  id="beam-E"
+                  name="beam-E"
+                  class="form-control"
+                  inputmode="decimal"
+                  pattern="[\+\-]?(\d*\.?\d+|\d+\.?\d*)([eE][\+\-]?\d+)?"
+                  title="Please enter a valid number (e.g., 123.456 or 1.23e-4)"                 value="{{ '%0.4g' % model.properties[session['selected_beam']][0]|float}}">
+                <label for="beam-load" class="form-label"
+                  >Tvärsnittsarea (m2)</label
+                >
+                <input
+                  type="text"
+                  id="beam-A"
+                  name="beam-A"
+                  form="beam-controls"
+                  class="form-control"
+                  inputmode="decimal"
+                  pattern="[\+\-]?(\d*\.?\d+|\d+\.?\d*)([eE][\+\-]?\d+)?"
+                  title="Please enter a valid number (e.g., 123.456 or 1.23e-4)"                 value="{{ '%0.4g' % model.properties[session['selected_beam']][1]|float}}">
+                <label for="beam-I" class="form-label"
+                  >Tröghetsmoment (m3)</label
+                >
+                <input
+                  type="text"
+                  id="beam-I"
+                  name="beam-I"
+                  form="beam-controls"
+                  class="form-control"
+                  inputmode="decimal"
+                  pattern="[\+\-]?(\d*\.?\d+|\d+\.?\d*)([eE][\+\-]?\d+)?"
+                  title="Please enter a valid number (e.g., 123.456 or 1.23e-4)"                  value="{{ '%0.4g' % model.properties[session['selected_beam']][2]|float}}">
+              </div>
+            </div>
+          </div>
+        </div>
+        <p></p>
+        <button type="submit" value="update-model-btn" class="btn btn-primary" >
+          Update Model
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

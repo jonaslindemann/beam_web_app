@@ -1,0 +1,44 @@
+/* static/css/style.css */
+.control-panel {
+    background-color: #f8f9fa;
+    padding: 10px;
+}
+
+.card {
+    margin-bottom: 0px;
+}
+
+#modelCanvas {
+    border: 1px solid #dee2e6;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* Account for navbar height (56px is Bootstrap's default navbar height) */
+.full-height-container {
+    min-height: calc(100vh - 56px);
+    height: calc(100vh - 56px - 2rem); /* Subtract navbar height and padding */
+    padding: 1rem;
+    margin-top: 56px; /* Push content below navbar */
+}
+
+.card-body {
+    height: calc(100% - 3rem);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas-container {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+}
+
+canvas {
+    width:100%;
+    position: absolute;
+}
