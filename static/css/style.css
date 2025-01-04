@@ -1,6 +1,25 @@
 /* static/css/style.css */
+
+/* Override Bootstrap variables */
+:root {
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+}
+
+/* Override Bootstrap classes */
+
+.navbar {
+    background-color: #ff0000;
+}
+
 .control-panel {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     padding: 10px;
 }
 
